@@ -50,6 +50,10 @@ public:
     void makeFBO();
     void setFullscreenquad();
     void paintTexture(GLuint texture);
+    void loadOBJ();
+    void paintBird();
+    void paintLand();
+    void initializeScene();
 public slots:
     void tick(QTimerEvent* event);                      // Called once per tick of m_timer
 
@@ -84,7 +88,11 @@ private:
 
     // Scenedata
     RenderData metaData;
+
+
     Camera camera;
+    std::vector<SceneLightData> lights;
+
     // Shapes;
     Cone cone;
     Cylinder cylinder;
@@ -120,4 +128,15 @@ private:
     // add ups
     float focalPoint = 5;
 
+    GLuint bird_shader;
+    GLuint birdVBO;
+    GLuint birdVAO;
+    int vert_size;
+
+
+    QImage bird_img;
+    GLuint bird_text;
+
+    glm::mat4 bird_ctm;
+    glm::mat4 normal_ctm;
 };

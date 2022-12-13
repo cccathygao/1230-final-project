@@ -39,8 +39,10 @@ void Realtime::paintTexture(GLuint m_texture){
     glBindTexture(GL_TEXTURE_2D,color_texture);
     glm::vec2 pixelsize = glm::vec2(1.f/(size().width()+0.f),1.f/(size().height()+0.f));
     glUniform2fv(glGetUniformLocation(m_fbo_shader,"pixelSize"),1,&pixelsize[0]);
-    glUniform1f(glGetUniformLocation(m_fbo_shader,"far"),settings.farPlane);
-    glUniform1f(glGetUniformLocation(m_fbo_shader,"focalPoint"),focalPoint);
+    glUniform1f(glGetUniformLocation(m_fbo_shader,"far"),100);
+    glUniform1f(glGetUniformLocation(m_fbo_shader,"fp"),settings.focalPoint);
+    glUniform1f(glGetUniformLocation(m_fbo_shader,"fs"),settings.focalScale);
+    glUniform1i(glGetUniformLocation(m_fbo_shader,"dofOn"),settings.dof);
     glBindVertexArray(fullscreen_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindTexture(GL_TEXTURE_2D, 0);

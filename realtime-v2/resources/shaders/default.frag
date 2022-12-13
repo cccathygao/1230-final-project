@@ -1,4 +1,4 @@
- #version 330 core
+#version 330 core
 
 struct Light {
     int type;       //0 = dir, 1 = point, 2 = spot
@@ -14,8 +14,8 @@ in vec3 worldPosition;
 in vec3 worldNormal;
 
 
-layout(location=1) out float fragDepth;
-layout(location=0) out vec4 fragColor;
+out vec4 fragColor;
+
 uniform float ka;
 uniform float kd;
 uniform float ks;
@@ -65,18 +65,18 @@ void main() {
 
 
         float ndotl = dot(normWorld,intersectToSource);
-        ndotl = max(ndotl,0.f);
+        ndotl = min(1.f,max(ndotl,0.f));
         total += fatt*kd*intensity*cDiffuse*ndotl;
 
         vec3 reflected = normalize(reflect(-intersectToSource,normWorld));
         float reflecteddot = dot(reflected,normalize(posCam-worldPosition));
-        if(reflecteddot<0.f){
+        if(reflecteddot<=0.f){
             continue;
         }
-        reflecteddot = shininess>0 ? pow(reflecteddot,shininess) : 1;
+        reflecteddot = shininess>0 ? pow(reflecteddot,shininess) : 0;
         total += fatt*ks*intensity*cSpecular*reflecteddot;
 
     }
     fragColor = vec4(clamp(total,0.0,1.0),1.f);
-    fragDepth = gl_FragCoord.z;
+
 }

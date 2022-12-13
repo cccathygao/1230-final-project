@@ -24,7 +24,6 @@ void Realtime::paintScene(){
 }
 
 void Realtime::parseLights(){
-    std::vector<SceneLightData> &lights = metaData.lights;
     int i;
     for(i=0;i<lights.size();i++){
         std::string scolor = "lights[" + std::to_string(i) + "].color";
@@ -34,6 +33,7 @@ void Realtime::parseLights(){
         std::string spenumbra = "lights[" + std::to_string(i) + "].penumbra";
         std::string sangle = "lights[" + std::to_string(i) + "].angle";
         std::string sfunction = "lights[" + std::to_string(i) + "].function";
+        glUseProgram(m_shader);
         glUniform3fv(glGetUniformLocation(m_shader, scolor.c_str()),1,&lights[i].color[0]);
         if(lights[i].type==LightType::LIGHT_DIRECTIONAL){
             glUniform1i(glGetUniformLocation(m_shader,stype.c_str()),0);
@@ -54,6 +54,7 @@ void Realtime::parseLights(){
         }
     }
     glUniform1i(glGetUniformLocation(m_shader,"nlights"),i);
+    glUseProgram(0);
 }
 
 void Realtime::parseShapes(ScenePrimitive& primitive){
@@ -64,13 +65,16 @@ void Realtime::parseShapes(ScenePrimitive& primitive){
 }
 
 void Realtime::parseGlobal(){
-    glUniform1f(glGetUniformLocation(m_shader,"ka"),metaData.globalData.ka);
-    glUniform1f(glGetUniformLocation(m_shader,"kd"),metaData.globalData.kd);
-    glUniform1f(glGetUniformLocation(m_shader,"ks"),metaData.globalData.ks);
+    glUseProgram(m_shader);
+    glUniform1f(glGetUniformLocation(m_shader,"ka"),0.8);
+    glUniform1f(glGetUniformLocation(m_shader,"kd"),0.8);
+    glUniform1f(glGetUniformLocation(m_shader,"ks"),0.8);
     glm::mat4 &view = camera.getViewMatrix();
     glm::mat4 &proj = camera.getProjMatrix();
     glm::vec3 posCam = camera.getPos();
+
     glUniformMatrix4fv(glGetUniformLocation(m_shader,"viewMat"),1,GL_FALSE,&view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m_shader,"projMat"),1,GL_FALSE,&proj[0][0]);
     glUniform3fv(glGetUniformLocation(m_shader,"posCam"),1,&posCam[0]);
+    glUseProgram(0);
 }

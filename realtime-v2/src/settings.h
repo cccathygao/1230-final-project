@@ -15,6 +15,10 @@ struct Settings {
     bool extraCredit2 = false;
     bool extraCredit3 = false;
     bool extraCredit4 = false;
+    bool shadow = false;
+    bool dof = false;
+    float focalScale = 80;
+    float focalPoint = 30;
 };
 
 

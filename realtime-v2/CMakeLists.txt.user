@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 8.0.2, 2022-12-07T23:44:50. -->
+<!-- Written by QtCreator 8.0.2, 2022-12-13T07:17:10. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -352,6 +352,7 @@
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory">C:/Users/gamst/Downloads/realtime-v2</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/gamst/Downloads/build-realtime-v2-Desktop_Qt_6_2_4_MinGW_64_bit-Release</value>
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>

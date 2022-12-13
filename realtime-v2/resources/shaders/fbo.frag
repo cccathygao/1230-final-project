@@ -4,8 +4,10 @@ in vec2 uvpass;
 uniform sampler2D depthTex;
 uniform sampler2D colorTex;
 uniform vec2 pixelSize;
-uniform float focalPoint;
+uniform float fp;
+uniform float fs;
 uniform float far;
+uniform int dofOn;
 out vec4 fragColor;
 
 const float GOLDEN_ANGLE = 2.39996323;
@@ -45,8 +47,11 @@ vec3 depthOfField(vec2 texCoord, float focusPoint, float focusScale)
 
 void main()
 {
-    //fragColor = texture(colorTex, uvpass);
-    fragColor = vec4(depthOfField(uvpass, 10, 10),1);
-    //fragColor = vec4(vec3(1.f)*texture(depthTex,uvpass).r,1.f);
+    if(dofOn==1){
+        fragColor = vec4(depthOfField(uvpass, fp, fs),1);
+    }
+    else{
+        fragColor = texture(colorTex, uvpass);
+    }
 
 }

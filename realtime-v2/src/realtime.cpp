@@ -63,7 +63,7 @@ void Realtime::initializeGL() {
     // Allows OpenGL to draw objects appropriately on top of one another
     glEnable(GL_DEPTH_TEST);
     // Tells OpenGL to only draw the front face
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     // Tells OpenGL how big the screen is
     glViewport(0, 0, size().width() * m_devicePixelRatio, size().height() * m_devicePixelRatio);
 
@@ -77,20 +77,33 @@ void Realtime::initializeGL() {
     initialized = true;
     m_shader = ShaderLoader::createShaderProgram(":/resources/shaders/default.vert",":/resources/shaders/default.frag");
     m_fbo_shader = ShaderLoader::createShaderProgram(":/resources/shaders/fbo.vert", ":/resources/shaders/fbo.frag");
+    bird_shader = ShaderLoader::createShaderProgram(":/resources/shaders/bird.vert", ":/resources/shaders/bird.frag");
     setupShapesVBO();
     updateShapesVBO();
     setFullscreenquad();
     makeFBO();
+    loadOBJ();
+    initializeScene();
+    bird_ctm = mat4(1,0,0,0,
+                 0,1,0,0,
+                 0,0,1,0,
+                 0,15,15,1);
+    normal_ctm = inverse(transpose(bird_ctm));
+    //
+
 }
 
 void Realtime::paintGL() {
 
+    glClearColor(0.8,1,1,1);
     glBindFramebuffer(GL_FRAMEBUFFER,m_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     int vp[4] = {0,0,0,0};
     glGetIntegerv(GL_VIEWPORT, &vp[0]);
     glViewport(0,0,fbo_width,fbo_height);
-    paintScene();
+    paintLand();
+    paintBird();
     glBindFramebuffer(GL_FRAMEBUFFER,default_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(vp[0],vp[1],vp[2],vp[3]);
@@ -116,6 +129,7 @@ void Realtime::resizeGL(int w, int h) {
 }
 
 void Realtime::sceneChanged() {
+    /*
     sceneLoaded = true;
     bool success = SceneParser::parse(settings.sceneFilePath, metaData);
     if (!success) {
@@ -124,10 +138,11 @@ void Realtime::sceneChanged() {
             return ;
     }
     setupCamera();
-    update(); // asks for a PaintGL() call to occur
+    update(); // asks for a PaintGL() call to occur*/
 }
 
 void Realtime::settingsChanged() {
+    /*
     if(settingChangeType()==SettingType::CAMERA_ONLY){
         if(sceneLoaded){
             camera.setNear(settings.nearPlane);
@@ -149,7 +164,7 @@ void Realtime::settingsChanged() {
         makeCurrent();
         updateShapesVBO();
         doneCurrent();
-    }
+    }*/
     update(); // asks for a PaintGL() call to occur
 }
 
@@ -157,12 +172,6 @@ void Realtime::settingsChanged() {
 
 void Realtime::keyPressEvent(QKeyEvent *event) {
     m_keyMap[Qt::Key(event->key())] = true;
-    if(m_keyMap[Qt::Key_Q]){
-        focalPoint += 0.1;
-    }
-    if(m_keyMap[Qt::Key_Z]){
-        focalPoint -= 0.1;
-    }
 }
 
 void Realtime::keyReleaseEvent(QKeyEvent *event) {
@@ -200,7 +209,17 @@ void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
     float deltaTime = elapsedms * 0.001f;
     m_elapsedTimer.restart();
-
+    mat4 trans = mat4(1,0,0,0,
+                      0,1,0,0,
+                      0,0,1,0,
+                      0,0,0.01,1);
+    bird_ctm = trans*bird_ctm;
+    normal_ctm = inverse(transpose(bird_ctm));
+    vec4 pos = camera.getPos()+vec4(0,0,0.01,0);
+    camera.setPos(pos);
+    camera.modifyView();
+    parseGlobal();
+    std::cout<<"time"<<std::endl;
     // Use deltaTime and m_keyMap here to move around
     moveCamera(deltaTime);
     update(); // asks for a PaintGL() call to occur

@@ -30,7 +30,7 @@ void MainWindow::initialize() {
     camera_label->setText("Camera");
     camera_label->setFont(font);
     QLabel *filters_label = new QLabel(); // Filters label
-    filters_label->setText("Filters");
+    filters_label->setText("Features");
     filters_label->setFont(font);
     QLabel *ec_label = new QLabel(); // Extra Credit label
     ec_label->setText("Extra Credit");
@@ -40,20 +40,20 @@ void MainWindow::initialize() {
     QLabel *param2_label = new QLabel(); // Parameter 2 label
     param2_label->setText("Parameter 2:");
     QLabel *near_label = new QLabel(); // Near plane label
-    near_label->setText("Near Plane:");
+    near_label->setText("Focal point:");
     QLabel *far_label = new QLabel(); // Far plane label
-    far_label->setText("Far Plane:");
+    far_label->setText("Focal scale:");
 
 
 
     // Create checkbox for per-pixel filter
     filter1 = new QCheckBox();
-    filter1->setText(QStringLiteral("Per-Pixel Filter"));
+    filter1->setText(QStringLiteral("Shadow"));
     filter1->setChecked(false);
 
     // Create checkbox for kernel-based filter
     filter2 = new QCheckBox();
-    filter2->setText(QStringLiteral("Kernel-Based Filter"));
+    filter2->setText(QStringLiteral("Depth of Field"));
     filter2->setChecked(false);
 
     // Create file uploader for scene file
@@ -109,15 +109,15 @@ void MainWindow::initialize() {
     // Create slider controls to control near/far planes
     nearSlider = new QSlider(Qt::Orientation::Horizontal); // Near plane slider
     nearSlider->setTickInterval(1);
-    nearSlider->setMinimum(1);
-    nearSlider->setMaximum(1000);
-    nearSlider->setValue(10);
+    nearSlider->setMinimum(1000);
+    nearSlider->setMaximum(10000);
+    nearSlider->setValue(10000);
 
     nearBox = new QDoubleSpinBox();
-    nearBox->setMinimum(0.01f);
-    nearBox->setMaximum(10.f);
-    nearBox->setSingleStep(0.1f);
-    nearBox->setValue(0.1f);
+    nearBox->setMinimum(0.f);
+    nearBox->setMaximum(100.f);
+    nearBox->setSingleStep(1.f);
+    nearBox->setValue(50);
 
     farSlider = new QSlider(Qt::Orientation::Horizontal); // Far plane slider
     farSlider->setTickInterval(1);
@@ -126,10 +126,10 @@ void MainWindow::initialize() {
     farSlider->setValue(10000);
 
     farBox = new QDoubleSpinBox();
-    farBox->setMinimum(10.f);
+    farBox->setMinimum(0.f);
     farBox->setMaximum(100.f);
-    farBox->setSingleStep(0.1f);
-    farBox->setValue(100.f);
+    farBox->setSingleStep(1.f);
+    farBox->setValue(50.f);
 
     // Adds the slider and number box to the parameter layouts
     lnear->addWidget(nearSlider);
@@ -157,26 +157,14 @@ void MainWindow::initialize() {
     ec4->setText(QStringLiteral("Extra Credit 4"));
     ec4->setChecked(false);
 
-    vLayout->addWidget(uploadFile);
-    vLayout->addWidget(tesselation_label);
-    vLayout->addWidget(param1_label);
-    vLayout->addWidget(p1Layout);
-    vLayout->addWidget(param2_label);
-    vLayout->addWidget(p2Layout);
-    vLayout->addWidget(camera_label);
+
+    vLayout->addWidget(filters_label);
+    vLayout->addWidget(filter1);
+    vLayout->addWidget(filter2);
     vLayout->addWidget(near_label);
     vLayout->addWidget(nearLayout);
     vLayout->addWidget(far_label);
     vLayout->addWidget(farLayout);
-    vLayout->addWidget(filters_label);
-    vLayout->addWidget(filter1);
-    vLayout->addWidget(filter2);
-    // Extra Credit:
-    vLayout->addWidget(ec_label);
-    vLayout->addWidget(ec1);
-    vLayout->addWidget(ec2);
-    vLayout->addWidget(ec3);
-    vLayout->addWidget(ec4);
 
     connectUIElements();
 
@@ -185,8 +173,8 @@ void MainWindow::initialize() {
     onValChangeP2(5);
 
     // Set default values for near and far planes
-    onValChangeNearBox(0.1f);
-    onValChangeFarBox(10.f);
+    onValChangeNearBox(50.f);
+    onValChangeFarBox(50.f);
 }
 
 void MainWindow::finish() {
@@ -249,12 +237,12 @@ void MainWindow::connectExtraCredit() {
 }
 
 void MainWindow::onPerPixelFilter() {
-    settings.perPixelFilter = !settings.perPixelFilter;
+    settings.shadow = !settings.shadow;
     realtime->settingsChanged();
 }
 
 void MainWindow::onKernelBasedFilter() {
-    settings.kernelBasedFilter = !settings.kernelBasedFilter;
+    settings.dof = !settings.dof;
     realtime->settingsChanged();
 }
 
@@ -305,14 +293,14 @@ void MainWindow::onValChangeFarSlider(int newValue) {
 void MainWindow::onValChangeNearBox(double newValue) {
     nearSlider->setValue(int(newValue*100.f));
     //nearBox->setValue(newValue);
-    settings.nearPlane = nearBox->value();
+    settings.focalPoint = nearBox->value();
     realtime->settingsChanged();
 }
 
 void MainWindow::onValChangeFarBox(double newValue) {
     farSlider->setValue(int(newValue*100.f));
     //farBox->setValue(newValue);
-    settings.farPlane = farBox->value();
+    settings.focalScale = farBox->value();
     realtime->settingsChanged();
 }
 

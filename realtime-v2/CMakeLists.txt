@@ -55,6 +55,7 @@ add_executable(${PROJECT_NAME}
     src/shapes/cylinder.h
     src/shapes/sphere.h
     src/camera.h
+    src/OBJ_Loader.h
 
 
 )
@@ -85,6 +86,8 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
         resources/shaders/default.vert
         resources/shaders/fbo.frag
         resources/shaders/fbo.vert
+        resources/shaders/bird.frag
+        resources/shaders/bird.vert
 )
 
 # GLEW: this provides support for Windows (including 64-bit)

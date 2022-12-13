@@ -48,7 +48,7 @@ struct SceneLightData {
     int id;
     LightType type;
 
-    SceneColor color;
+    glm::vec4 color;
     glm::vec3 function;  // Attenuation function
 
     glm::vec4 pos;       // Not applicable to directional lights
