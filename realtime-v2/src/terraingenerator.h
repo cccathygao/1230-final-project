@@ -12,6 +12,7 @@ public:
     ~TerrainGenerator();
     int getResolution() { return m_resolution; };
     std::vector<float> generateTerrain();
+    std::vector<float> generateNextTerrain();
 
 private:
 

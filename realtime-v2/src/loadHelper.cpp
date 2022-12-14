@@ -225,9 +225,9 @@ void Realtime::paintLand(){
 }
 
 void Realtime::paintTerrain(){
-    mat4 mv = camera.getViewMatrix()*mat4(100,0,0,0,
-                                         0,100,0,0,
-                                         0,0,100,0,
+    mat4 mv = camera.getViewMatrix()*mat4(20,0,0,0,
+                                         0,20,0,0,
+                                         0,0,20,0,
                                          0,0,0,1);
     mat4 proj = camera.getProjMatrix();
     glUseProgram(terrain_shader);
@@ -236,6 +236,27 @@ void Realtime::paintTerrain(){
     glBindVertexArray(terrain_vao);
     glDrawArrays(GL_TRIANGLES,0,terrain_size);
     glUseProgram(0);
+
+    std::vector<float> deltaPos = {0, -0.8, 0.8};
+
+    for (int i = 0; i < deltaPos.size(); ++i) {
+        for (int j = 0; j < deltaPos.size(); ++j) {
+            glUseProgram(terrain_shader);
+            mv = camera.getViewMatrix()*mat4(20,0,0,0,
+                                             0,20,0,0,
+                                             0,0,20,0,
+                                             0,0,0,1)
+                                       *mat4(1, 0, 0, 0,
+                                             0, 1, 0, 0,
+                                             0, 0, 1, 0,
+                                             deltaPos[i], 0, deltaPos[j], 1);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"mvMatrix"),1,GL_FALSE,&mv[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMatrix"),1,GL_FALSE,&proj[0][0]);
+            glBindVertexArray(terrain_vao);
+            glDrawArrays(GL_TRIANGLES,0,terrain_size);
+            glUseProgram(0);
+        }
+    }
 }
 
 void Realtime::initializeScene(){
@@ -245,11 +266,10 @@ void Realtime::initializeScene(){
 
     vec4 pos = vec4(0,30,0,1);
     vec4 look = normalize(birdPos-pos);
-    // look = vec4(0, 0, 1, 0);
     vec4 up = vec4(0,1,0,0);
     float heightAngle = glm::radians(30.f);
 
-    camera = Camera(pos,look,up,heightAngle,0,0,size().height(),size().width(),10,100.f);
+    camera = Camera(pos,look,up,heightAngle,0,0,size().height(),size().width(),10.f,100.f);
 
     //initialize light sources
     SceneLightData light1;
@@ -273,7 +293,6 @@ void Realtime::initializeScene(){
 
     glBindBuffer(GL_ARRAY_BUFFER, terrain_vbo);
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(GLfloat), &verts[0], GL_STATIC_DRAW);
-
 
 
     glEnableVertexAttribArray(0);
