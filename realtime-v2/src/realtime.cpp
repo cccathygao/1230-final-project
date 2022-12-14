@@ -155,8 +155,8 @@ void Realtime::paintGL() {
     glGetIntegerv(GL_VIEWPORT, &vp[0]);
     glViewport(0,0,fbo_width,fbo_height);
     paintLand();
-    paintBird();
     renderSkyBox();
+    paintBird();
 
     glBindFramebuffer(GL_FRAMEBUFFER,default_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

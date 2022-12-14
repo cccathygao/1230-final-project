@@ -150,12 +150,17 @@ void Realtime::loadOBJ(){
 void Realtime::paintBird(){
     //mat4 vp = camera.getProjMatrix()*camera.getViewMatrix();
 
-    //vec3 cAmbient = vec3(153/255.f,76/255.f,0);
-    //vec3 cDiffuse = vec3(153/255.f,76/255.f,0);
-    vec3 cAmbient = vec3(153/255.f,76/255.f,0);
-    vec3 cDiffuse = vec3(1);
+//    vec3 cAmbient = vec3(153/255.f,76/255.f,0);
+    vec3 cDiffuse = vec3(153/255.f,76/255.f,0);
+    vec3 cAmbient = vec3(0.2);
+//    vec3 cDiffuse = vec3(1);
     vec3 cSpecular = vec3(0);
     float shininess = 0;
+
+//    vec3 cAmbient = vec3(0);
+//    vec3 cDiffuse = vec3(0.3);
+//    vec3 cSpecular = vec3(0);
+//    float shininess = 0;
 
     glUseProgram(m_phong_shader);
 
