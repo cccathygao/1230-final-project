@@ -54,6 +54,9 @@ public:
     void paintBird();
     void paintLand();
     void initializeScene();
+    void makeFBO2();
+    void paintTerrain();
+
 public slots:
     void tick(QTimerEvent* event);                      // Called once per tick of m_timer
 
@@ -125,6 +128,9 @@ private:
     int screen_width;
     int screen_height;
 
+    GLuint depth_fbo;
+    GLuint bird_depth_texture;
+
     // add ups
     float focalPoint = 5;
 
@@ -132,7 +138,11 @@ private:
     GLuint birdVBO;
     GLuint birdVAO;
     int vert_size;
+    GLuint terrain_shader;
+    GLuint terrain_vbo;
+    GLuint terrain_vao;
 
+    int terrain_size;
 
     QImage bird_img;
     GLuint bird_text;

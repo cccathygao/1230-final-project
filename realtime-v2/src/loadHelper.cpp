@@ -3,6 +3,7 @@
 #include "settings.h"
 #include <iostream>
 #include "OBJ_Loader.h"
+#include "terraingenerator.h"
 
 using namespace glm;
 
@@ -223,6 +224,20 @@ void Realtime::paintLand(){
     glUseProgram(0);
 }
 
+void Realtime::paintTerrain(){
+    mat4 mv = camera.getViewMatrix()*mat4(100,0,0,0,
+                                         0,100,0,0,
+                                         0,0,100,0,
+                                         0,0,0,1);
+    mat4 proj = camera.getProjMatrix();
+    glUseProgram(terrain_shader);
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"mvMatrix"),1,GL_FALSE,&mv[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMatrix"),1,GL_FALSE,&proj[0][0]);
+    glBindVertexArray(terrain_vao);
+    glDrawArrays(GL_TRIANGLES,0,terrain_size);
+    glUseProgram(0);
+}
+
 void Realtime::initializeScene(){
     //initialize camera
 
@@ -246,5 +261,34 @@ void Realtime::initializeScene(){
 
     parseGlobal();
     parseLights();
+    //terrain
+    TerrainGenerator m_terrain;
+    std::vector<GLfloat> verts = m_terrain.generateTerrain();
+
+    glGenBuffers(1,&terrain_vbo);
+    glGenVertexArrays(1,&terrain_vao);
+    glBindVertexArray(terrain_vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, terrain_vbo);
+    glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(GLfloat), &verts[0], GL_STATIC_DRAW);
+
+
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+                             nullptr);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+                             reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
+                             reinterpret_cast<void *>(6 * sizeof(GLfloat)));
+    terrain_size = verts.size()/9;
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
 
 }
+

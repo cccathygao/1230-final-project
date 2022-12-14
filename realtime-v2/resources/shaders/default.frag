@@ -25,7 +25,6 @@ uniform vec3 cSpecular;
 uniform float shininess;
 uniform vec3 posCam;
 
-
 uniform int nlights;
 
 uniform Light lights[8];
@@ -78,5 +77,4 @@ void main() {
 
     }
     fragColor = vec4(clamp(total,0.0,1.0),1.f);
-
 }

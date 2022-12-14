@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
     src/paintHelper.cpp
     src/actionHandler.cpp
     src/fboHandler.cpp
+    src/terraingenerator.cpp
 
     src/mainwindow.h
     src/realtime.h
@@ -56,6 +57,7 @@ add_executable(${PROJECT_NAME}
     src/shapes/sphere.h
     src/camera.h
     src/OBJ_Loader.h
+    src/terraingenerator.h
 
 
 )
@@ -88,6 +90,8 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
         resources/shaders/fbo.vert
         resources/shaders/bird.frag
         resources/shaders/bird.vert
+        resources/shaders/fragment.frag
+        resources/shaders/vertex.vert
 )
 
 # GLEW: this provides support for Windows (including 64-bit)
