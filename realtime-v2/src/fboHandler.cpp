@@ -5,21 +5,19 @@
 
 void Realtime::makeFBO(){
     glGenTextures(1,&depth_texture);
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
     glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH_COMPONENT24,fbo_width,fbo_height,0,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     glGenTextures(1,&color_texture);
-    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, color_texture);
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,fbo_width,fbo_height,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D,0);
     glUseProgram(m_fbo_shader);
-    glUniform1i(glGetUniformLocation(m_fbo_shader,"depthTex"),0);
-    glUniform1i(glGetUniformLocation(m_fbo_shader,"colorTex"),1);
+    glUniform1i(glGetUniformLocation(m_fbo_shader,"depthTex"),1);
+    glUniform1i(glGetUniformLocation(m_fbo_shader,"colorTex"),2);
     glUseProgram(0);
 
 
@@ -33,9 +31,9 @@ void Realtime::makeFBO(){
 
 void Realtime::paintTexture(GLuint m_texture){
     glUseProgram(m_fbo_shader);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,depth_texture);
     glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,depth_texture);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D,color_texture);
     glm::vec2 pixelsize = glm::vec2(1.f/(size().width()+0.f),1.f/(size().height()+0.f));
     glUniform2fv(glGetUniformLocation(m_fbo_shader,"pixelSize"),1,&pixelsize[0]);

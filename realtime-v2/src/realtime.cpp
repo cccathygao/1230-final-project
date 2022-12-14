@@ -1,5 +1,5 @@
+#include <glm/gtx/transform.hpp>
 #include "realtime.h"
-
 #include "utils/shaderloader.h"
 #include <QCoreApplication>
 #include <QMouseEvent>
@@ -62,6 +62,7 @@ void Realtime::initializeGL() {
 
     // Allows OpenGL to draw objects appropriately on top of one another
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     // Tells OpenGL to only draw the front face
     //glEnable(GL_CULL_FACE);
     // Tells OpenGL how big the screen is
@@ -85,12 +86,13 @@ void Realtime::initializeGL() {
     makeFBO();
     loadOBJ();
     initializeScene();
+    float angle = 44.9;
     bird_ctm = mat4(1,0,0,0,
                  0,1,0,0,
                  0,0,1,0,
-                 0,15,15,1);
+                 -150,20,-150,1)*glm::rotate(angle,vec3(0,1,0));
     normal_ctm = inverse(transpose(bird_ctm));
-    //
+
 
 }
 
@@ -103,8 +105,9 @@ void Realtime::paintGL() {
     int vp[4] = {0,0,0,0};
     glGetIntegerv(GL_VIEWPORT, &vp[0]);
     glViewport(0,0,fbo_width,fbo_height);
-    paintTerrain();
     paintBird();
+    paintTerrain();
+
     glBindFramebuffer(GL_FRAMEBUFFER,default_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(vp[0],vp[1],vp[2],vp[3]);
@@ -210,15 +213,15 @@ void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
     float deltaTime = elapsedms * 0.001f;
     m_elapsedTimer.restart();
-    /*mat4 trans = mat4(1,0,0,0,
+    mat4 trans = mat4(1,0,0,0,
                       0,1,0,0,
                       0,0,1,0,
-                      0,0,0.01,1);
+                      0.05,0,0.05,1);
     bird_ctm = trans*bird_ctm;
     normal_ctm = inverse(transpose(bird_ctm));
-    vec4 pos = camera.getPos()+vec4(0,0,0.01,0);
+    vec4 pos = camera.getPos()+vec4(0.05,0,0.05,0);
     camera.setPos(pos);
-    camera.modifyView();*/
+    camera.modifyView();
     parseGlobal();
     // Use deltaTime and m_keyMap here to move around
     moveCamera(deltaTime);

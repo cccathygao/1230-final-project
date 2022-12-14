@@ -1,22 +1,26 @@
 #version 330 core
-layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec3 normal;
-layout(location = 2) in vec3 inColor;
-out vec4 vert;
-out vec4 norm;
-out vec3 color;
-out vec3 lightDir;
 
-uniform mat4 projMatrix;
-uniform mat4 mvMatrix;
+layout(location=0) in vec3 objectPosition;
+layout(location=1) in vec3 objectNormal;
+layout(location=2) in vec3 objectColor;
 
-void main()
-{
-    vec3 vertex1 = vec3(vertex[0],vertex[2],vertex[1]);
-    vec3 normal1 = vec3(normal[0],normal[2],normal[1]);
-    vert  = mvMatrix * vec4(vertex1, 1.0);
-    norm  = transpose(inverse(mvMatrix)) *  vec4(normal1, 0.0);
-    color = inColor;
-    lightDir = normalize(vec3(1, -1, 1));
-    gl_Position = projMatrix * mvMatrix * vec4(vertex1, 1.0);
+out vec3 worldPosition;
+out vec3 worldNormal;
+out vec3 outColor;
+
+uniform mat4 modelMat;
+uniform mat4 worldNormalMat;
+uniform mat4 viewMat;
+uniform mat4 projMat;
+
+void main() {
+    outColor = objectColor;
+    vec3 realpos = vec3(objectPosition[0],objectPosition[2],objectPosition[1]);
+    vec3 realNorm = vec3(objectNormal[0],objectNormal[2],objectNormal[1]);
+    //position output
+    worldPosition = vec3(modelMat*vec4(realpos,1.f));
+    worldNormal = mat3(worldNormalMat)*normalize(realNorm);
+    gl_Position = projMat*viewMat*vec4(worldPosition,1.0);
+
 }
+

@@ -6,7 +6,8 @@
 #include "terraingenerator.h"
 
 using namespace glm;
-
+void invertX(std::vector<float> &verts);
+void invertY(std::vector<float> &verts);
 /**
  * This is the class where VBO and VAO handling methods are located
  * responsible for initializing and updating data
@@ -156,120 +157,64 @@ void Realtime::paintBird(){
     glDrawArrays(GL_TRIANGLES,0,vert_size);
     glUseProgram(0);
 }
-void Realtime::paintLand(){
-    //mat4 vp = camera.getProjMatrix()*camera.getViewMatrix();
-    mat4 model = mat4(1000,0,0,0,
-                 0,1,0,0,
-                 0,0,1000,0,
-                 0,0,0,1);
-    mat4 itctm = inverse(transpose(model));
-    //vec3 cAmbient = vec3(153/255.f,76/255.f,0);
-    //vec3 cDiffuse = vec3(153/255.f,76/255.f,0);
-    vec3 cAmbient = vec3(0.63,0.86,0.52);
-    vec3 cDiffuse = vec3(0.42,0.57,0.35);
-    vec3 cSpecular = vec3(0);
-    float shininess = 0;
-
-    glUseProgram(m_shader);
-
-    glUniformMatrix4fv(glGetUniformLocation(m_shader,"modelMat"),1,GL_FALSE,&model[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m_shader,"worldNormalMat"),1,GL_FALSE,&itctm[0][0]);
-
-
-
-    glUniform3fv(glGetUniformLocation(m_shader,"cAmbient"),1,&cAmbient[0]);
-    glUniform3fv(glGetUniformLocation(m_shader,"cDiffuse"),1,&cDiffuse[0]);
-    glUniform3fv(glGetUniformLocation(m_shader,"cSpecular"),1,&cSpecular[0]);
-    glUniform1f(glGetUniformLocation(m_shader,"shininess"),shininess);
-
-
-
-    glBindVertexArray(shape_vaos[static_cast<int>(PrimitiveType::PRIMITIVE_CUBE)]);
-    glDrawArrays(GL_TRIANGLES,0,shapeSize(PrimitiveType::PRIMITIVE_CUBE)/6);
-    glUseProgram(0);
-
-    model = mat4(5,0,0,0,
-                 0,5,0,0,
-                 0,0,5,0,
-                 0,0,0,1);
-    model = mat4(1,0,0,0,
-                 0,1,0,0,
-                 0,0,1,0,
-                 0,5.5,50,1)*model;
-
-    itctm = inverse(transpose(model));
-    //vec3 cAmbient = vec3(153/255.f,76/255.f,0);
-    //vec3 cDiffuse = vec3(153/255.f,76/255.f,0);
-    cAmbient = vec3(0);
-    cDiffuse = vec3(0.8,0.6,0.6);
-    cSpecular = vec3(1);
-    shininess = 15;
-
-    glUseProgram(m_shader);
-
-    glUniformMatrix4fv(glGetUniformLocation(m_shader,"modelMat"),1,GL_FALSE,&model[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m_shader,"worldNormalMat"),1,GL_FALSE,&itctm[0][0]);
-
-
-
-    glUniform3fv(glGetUniformLocation(m_shader,"cAmbient"),1,&cAmbient[0]);
-    glUniform3fv(glGetUniformLocation(m_shader,"cDiffuse"),1,&cDiffuse[0]);
-    glUniform3fv(glGetUniformLocation(m_shader,"cSpecular"),1,&cSpecular[0]);
-    glUniform1f(glGetUniformLocation(m_shader,"shininess"),shininess);
-
-
-
-    glBindVertexArray(shape_vaos[static_cast<int>(PrimitiveType::PRIMITIVE_CYLINDER)]);
-    glDrawArrays(GL_TRIANGLES,0,shapeSize(PrimitiveType::PRIMITIVE_CYLINDER)/6);
-    glUseProgram(0);
-}
 
 void Realtime::paintTerrain(){
-    mat4 mv = camera.getViewMatrix()*mat4(20,0,0,0,
-                                         0,20,0,0,
-                                         0,0,20,0,
-                                         0,0,0,1);
+    mat4 model = mat4(300,0,0,0,
+                   0,50,0,0,
+                   0,0,300,0,
+                   0,0,0,1);
     mat4 proj = camera.getProjMatrix();
+    mat4 viewMat = camera.getViewMatrix();
+    mat4 itctm = inverse(transpose(model));
+
+    itctm = inverse(transpose(model));
     glUseProgram(terrain_shader);
-    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"mvMatrix"),1,GL_FALSE,&mv[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMatrix"),1,GL_FALSE,&proj[0][0]);
+
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"modelMat"),1,GL_FALSE,&model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMat"),1,GL_FALSE,&proj[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"viewMat"),1,GL_FALSE,&viewMat[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"worldNormalMat"),1,GL_FALSE,&itctm[0][0]);
+
     glBindVertexArray(terrain_vao);
     glDrawArrays(GL_TRIANGLES,0,terrain_size);
     glUseProgram(0);
 
     std::vector<float> deltaPos = {0, -0.8, 0.8};
-
+/*
     for (int i = 0; i < deltaPos.size(); ++i) {
         for (int j = 0; j < deltaPos.size(); ++j) {
             glUseProgram(terrain_shader);
-            mv = camera.getViewMatrix()*mat4(20,0,0,0,
-                                             0,20,0,0,
-                                             0,0,20,0,
+            model = mat4(300,0,0,0,
+                                             0,50,0,0,
+                                             0,0,300,0,
                                              0,0,0,1)
                                        *mat4(1, 0, 0, 0,
                                              0, 1, 0, 0,
                                              0, 0, 1, 0,
                                              deltaPos[i], 0, deltaPos[j], 1);
-            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"mvMatrix"),1,GL_FALSE,&mv[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMatrix"),1,GL_FALSE,&proj[0][0]);
-            glBindVertexArray(terrain_vao);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"modelMat"),1,GL_FALSE,&model[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"projMat"),1,GL_FALSE,&proj[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"viewMat"),1,GL_FALSE,&viewMat[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(terrain_shader,"worldNormalMat"),1,GL_FALSE,&itctm[0][0]);
+            glBindVertexArray(terrain_vao[0]);
             glDrawArrays(GL_TRIANGLES,0,terrain_size);
             glUseProgram(0);
         }
-    }
+    }*/
+
 }
 
 void Realtime::initializeScene(){
     //initialize camera
 
-    vec4 birdPos = vec4(0,15,15,1);
+    vec4 birdPos = vec4(-150,20,-150,1);
 
-    vec4 pos = vec4(0,30,0,1);
+    vec4 pos = vec4(-162,30,-160,1);
     vec4 look = normalize(birdPos-pos);
     vec4 up = vec4(0,1,0,0);
     float heightAngle = glm::radians(30.f);
 
-    camera = Camera(pos,look,up,heightAngle,0,0,size().height(),size().width(),10.f,100.f);
+    camera = Camera(pos,look,up,heightAngle,0,0,size().height(),size().width(),10,200.f);
 
     //initialize light sources
     SceneLightData light1;
@@ -279,13 +224,23 @@ void Realtime::initializeScene(){
     light1.color = vec4(1.f);
 
     lights.push_back(light1);
+    //light camera
+    float near_plane = 10.f, far_plane = 100.f;
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+    glm::vec3 lightPos = vec3(30,30,15);
+    glm::vec3 at = glm::vec3(0, 15, 15);
+
+    glm::mat4 lightView = glm::lookAt(lightPos,at,vec3(up));
+
 
     parseGlobal();
     parseLights();
-
     //terrain
     TerrainGenerator m_terrain;
     std::vector<GLfloat> verts = m_terrain.generateTerrain();
+    invertX(verts);
+    invertY(verts);
 
     glGenBuffers(1,&terrain_vbo);
     glGenVertexArrays(1,&terrain_vao);
@@ -307,9 +262,43 @@ void Realtime::initializeScene(){
 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat),
                              reinterpret_cast<void *>(6 * sizeof(GLfloat)));
-    terrain_size = verts.size()/9;
+    terrain_size = verts.size();
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER,0);
 
+
+
+
+
+
+}
+
+void invertX(std::vector<float> &verts){
+    int n = verts.size();
+    for(int i=0;i<n;i+=9){
+        verts.push_back(-verts[i+0]);
+        verts.push_back(verts[i+1]);
+        verts.push_back(verts[i+2]);
+        verts.push_back(-verts[i+3]);
+        verts.push_back(verts[i+4]);
+        verts.push_back(verts[i+5]);
+        verts.push_back(verts[i+6]);
+        verts.push_back(verts[i+7]);
+        verts.push_back(verts[i+8]);
+    }
+}
+void invertY(std::vector<float> &verts){
+    int n = verts.size();
+    for(int i=0;i<n;i+=9){
+        verts.push_back(verts[i+0]);
+        verts.push_back(-verts[i+1]);
+        verts.push_back(verts[i+2]);
+        verts.push_back(verts[i+3]);
+        verts.push_back(-verts[i+4]);
+        verts.push_back(verts[i+5]);
+        verts.push_back(verts[i+6]);
+        verts.push_back(verts[i+7]);
+        verts.push_back(verts[i+8]);
+    }
 }
 
