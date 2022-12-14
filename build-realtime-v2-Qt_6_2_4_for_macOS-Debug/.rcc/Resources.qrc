@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="resources/shaders/default.frag">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/default.frag</file>
+    <file alias="resources/shaders/default.vert">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/default.vert</file>
+    <file alias="resources/shaders/fbo.frag">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/fbo.frag</file>
+    <file alias="resources/shaders/fbo.vert">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/fbo.vert</file>
+    <file alias="resources/shaders/bird.frag">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/bird.frag</file>
+    <file alias="resources/shaders/bird.vert">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/bird.vert</file>
+    <file alias="resources/shaders/fragment.frag">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/fragment.frag</file>
+    <file alias="resources/shaders/vertex.vert">/Users/vincentzhu/1230-final-project/realtime-v2/resources/shaders/vertex.vert</file>
+  </qresource>
+</RCC>
+

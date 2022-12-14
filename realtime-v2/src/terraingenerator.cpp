@@ -8,10 +8,9 @@
 TerrainGenerator::TerrainGenerator() {
     // Task 8: turn off wireframe shading
     m_wireshade = false; // STENCIL CODE
-    // m_wireshade = false; // TA SOLUTION
 
     // Define resolution of terrain generation
-    m_resolution = 100;
+    m_resolution = 300;
 
     // Generate random vector lookup table
     m_lookupSize = 1024;
@@ -115,8 +114,6 @@ glm::vec3 TerrainGenerator::getPosition(int row, int col) {
     return glm::vec3(x, y, z);
 }
 
-// ================== Students, please focus on the code below this point
-
 // Helper for computePerlin() and, possibly, getColor()
 float interpolate(float A, float B, float alpha) {
     // Task 4: implement your easing/interpolation function below
@@ -128,18 +125,25 @@ float interpolate(float A, float B, float alpha) {
 // Returns a height value, z, by sampling a noise function
 float TerrainGenerator::getHeight(float x, float y) {
 
-    // Task 6: modify this call to produce noise of a different frequency
     float z = computePerlin(x * 5, y * 5) / 2;
-
-    // Task 7: combine multiple different octaves of noise to produce fractal
-    // perlin noise
     float a = computePerlin(x * 2, y * 2) / 2;
     float b = computePerlin(x * 4, y * 4) / 2;
     float c = computePerlin(x * 8, y * 8) / 8;
     float d = computePerlin(x * 16, y * 16) / 16;
 
-    // Return 0 as placeholder
-    return z + a + b + c + d;
+    // return z + a + b + c + d;
+
+    float total = 0;
+    float persistence = 0.5;
+    float lacunarity = 2;
+    float amp = 16;
+    float freq = 2;
+    for (int i = 0; i < 3; i++) {
+        total += computePerlin(x * freq, y * freq) / amp;
+        amp  *= persistence;
+        freq *= lacunarity;
+    }
+    return total;
 }
 
 // Computes the normal of a vertex by averaging neighbors
@@ -164,14 +168,18 @@ glm::vec3 TerrainGenerator::getNormal(int row, int col) {
 
 // Computes color of vertex using normal and, optionally, position
 glm::vec3 TerrainGenerator::getColor(glm::vec3 normal, glm::vec3 position) {
-    // Task 10: compute color as a function of the normal and position
-    if (glm::dot(normal, glm::vec3(1,1,0)) == 0.0) {
-        return glm::vec3(1, 1, 1);
+    // std::cout << position.z << std::endl;
+    if (position.z < -0.05) {
+        return glm::vec3(60.0/255.0, 95.0/255.0, 190.0/255.0);
     }
-    else if (position.z > 0) {
-        return glm::vec3(1, 1, 1);
-    } else {
-        return glm::vec3(0.5, 0.5, 0.5);
+    else if (position.z > -0.05 && position.z < 0.05) {
+        return glm::vec3(95.0/255.0, 165.0/255.0, 30.0/255.0);
+    }
+    else if (position.z > 0.05 && position.z < 0.1) {
+        return glm::vec3(65.0/255.0, 115.0/255.0, 20.0/255.0);
+    }
+    else if (position.z > 0.1) {
+        return glm::vec3(1.0, 1.0, 1.0);
     }
 }
 

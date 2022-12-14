@@ -245,6 +245,7 @@ void Realtime::initializeScene(){
 
     vec4 pos = vec4(0,30,0,1);
     vec4 look = normalize(birdPos-pos);
+    // look = vec4(0, 0, 1, 0);
     vec4 up = vec4(0,1,0,0);
     float heightAngle = glm::radians(30.f);
 
@@ -261,6 +262,7 @@ void Realtime::initializeScene(){
 
     parseGlobal();
     parseLights();
+
     //terrain
     TerrainGenerator m_terrain;
     std::vector<GLfloat> verts = m_terrain.generateTerrain();
