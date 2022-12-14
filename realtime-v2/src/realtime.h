@@ -22,6 +22,7 @@
 #include <QTimer>
 #include <data/vbo.h>
 #include <data/vao.h>
+#include <stb_image.h>
 
 
 enum class SettingType{
@@ -56,7 +57,7 @@ public:
     void paintBird();
     void paintLand();
     void initializeScene();
-    std::vector<float> m_buffer;    // shadow mapping,buffer for bird data
+    std::vector<float> m_bird_buffer;    // shadow mapping,buffer for bird data
     GLuint m_phong_shader;
 
 public slots:
@@ -163,6 +164,10 @@ private:
 
     glm::mat4 bird_ctm;
     glm::mat4 normal_ctm;
+
+    std::vector<float> m_terrain_buffer;
+    VAO m_terrain_vao = VAO();
+    VBO m_terrain_vbo = VBO();
 
     // sky box
     void initializeSkyBox();

@@ -62,6 +62,13 @@ void Realtime::finish() {
     glDeleteBuffers(1, &bird_vbo_id);
     glDeleteVertexArrays(1, &bird_vao_id);
 
+    // terrain vao vbo
+    GLuint terrain_vbo_id = m_terrain_vbo.getId();
+    GLuint terrain_vao_id = m_terrain_vao.getId();
+
+    glDeleteBuffers(1, &terrain_vbo_id);
+    glDeleteVertexArrays(1, &terrain_vao_id);
+
     // fullscreen
     glDeleteProgram(m_fullscreen_shader);
     glDeleteBuffers(1, &m_fullscreen_vbo);
@@ -124,6 +131,9 @@ void Realtime::initializeGL() {
     // generate VAO and VBO
     m_bird_vao.initialize();
     m_bird_vbo.initialize();
+
+    m_terrain_vao.initialize();
+    m_terrain_vbo.initialize();
 
     loadOBJ();
     initializeScene();
@@ -364,7 +374,7 @@ void Realtime::renderDepthMap(){
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &bird_ctm[0][0]);
 
     // draw
-    m_bird_vao.draw(m_buffer.size(), -1, -1);
+    m_bird_vao.draw(m_bird_buffer.size(), -1, -1);
 
     glUseProgram(0);
 }
@@ -467,23 +477,23 @@ void Realtime::loadCubemap(std::vector<std::string> faces)
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 
     // set image on 6 sides of the texture
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-            );
-            stbi_image_free(data);
-        }
-        else
-        {
-            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
-        }
-    }
+//    int width, height, nrChannels;
+//    for (unsigned int i = 0; i < faces.size(); i++)
+//    {
+//        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+//        if (data)
+//        {
+//            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+//                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+//            );
+//            stbi_image_free(data);
+//        }
+//        else
+//        {
+//            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+//            stbi_image_free(data);
+//        }
+//    }
 
     // specify cube map texture params
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
