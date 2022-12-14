@@ -9,7 +9,8 @@
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform.hpp"
-#include "src/stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace glm;
 
@@ -61,13 +62,6 @@ void Realtime::finish() {
 
     glDeleteBuffers(1, &bird_vbo_id);
     glDeleteVertexArrays(1, &bird_vao_id);
-
-    // terrain vao vbo
-    GLuint terrain_vbo_id = m_terrain_vbo.getId();
-    GLuint terrain_vao_id = m_terrain_vao.getId();
-
-    glDeleteBuffers(1, &terrain_vbo_id);
-    glDeleteVertexArrays(1, &terrain_vao_id);
 
     // fullscreen
     glDeleteProgram(m_fullscreen_shader);
@@ -126,14 +120,11 @@ void Realtime::initializeGL() {
     setFullscreenquad();
     makeFBO();
     makeDepthFBO();
-    initFullscreenQuad();
+//    initFullscreenQuad();
 
     // generate VAO and VBO
     m_bird_vao.initialize();
     m_bird_vbo.initialize();
-
-    m_terrain_vao.initialize();
-    m_terrain_vbo.initialize();
 
     loadOBJ();
     initializeScene();
@@ -146,7 +137,6 @@ void Realtime::initializeGL() {
     // sky box
     initializeSkyBox();
     loadCubemap(faces);
-
 }
 
 void Realtime::paintGL() {
@@ -155,6 +145,7 @@ void Realtime::paintGL() {
 //    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 //    glClear(GL_DEPTH_BUFFER_BIT);
 //    renderDepthMap();
+
 
     glClearColor(0.8,1,1,1);
     glBindFramebuffer(GL_FRAMEBUFFER,m_fbo);
@@ -165,6 +156,7 @@ void Realtime::paintGL() {
     glViewport(0,0,fbo_width,fbo_height);
     paintLand();
     paintBird();
+    renderSkyBox();
 
     glBindFramebuffer(GL_FRAMEBUFFER,default_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -477,23 +469,24 @@ void Realtime::loadCubemap(std::vector<std::string> faces)
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 
     // set image on 6 sides of the texture
-//    int width, height, nrChannels;
-//    for (unsigned int i = 0; i < faces.size(); i++)
-//    {
-//        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-//        if (data)
-//        {
-//            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-//                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-//            );
-//            stbi_image_free(data);
-//        }
-//        else
-//        {
-//            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-//            stbi_image_free(data);
-//        }
-//    }
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        int width, height, nrChannels;
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+//            stbi_set_flip_vertically_on_load(false);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
 
     // specify cube map texture params
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -509,26 +502,15 @@ void Realtime::renderSkyBox(){
     glm::mat4 view;
     glm::mat4 proj;
 
-    // draw scene as normal (paintScene)
-//    shader.use();
-//    glm::mat4 model = glm::mat4(1.0f);
-//    glm::mat4 view = camera.GetViewMatrix();
-//    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//    shader.setMat4("model", model);
-//    shader.setMat4("view", view);
-//    shader.setMat4("projection", projection);
-//    shader.setVec3("cameraPos", camera.Position);
-
-    // cubes
-    glBindVertexArray(cubeVAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-
     // draw skybox as last
     glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+
     glUseProgram(m_skybox_shader);
+
+    // set uniforms
+    GLint skyboxTextureLocation = glGetUniformLocation(m_skybox_shader, "skybox");
+    glUniform1i(skyboxTextureLocation, 0);
+
     view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
     proj = camera.getProjMatrix();
 
@@ -538,30 +520,14 @@ void Realtime::renderSkyBox(){
     GLint projMatrixLocation = glGetUniformLocation(m_skybox_shader, "projection");
     glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, &proj[0][0]);
 
-    // skybox cube
+    // draw skybox cube
     glBindVertexArray(skyboxVAO);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
     glDepthFunc(GL_LESS); // set depth function back to default
 
-    // OR USE BELOW INSTEAD
-
-    glDepthMask(GL_FALSE);
-    glUseProgram(m_skybox_shader);
-    // set view and projection matrix
-    // remove translation
-    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
-    proj = camera.getProjMatrix();
-
-    glUniformMatrix4fv(glGetUniformLocation(m_skybox_shader, "view"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m_skybox_shader, "projection"), 1, GL_FALSE, &proj[0][0]);
-
-    glBindVertexArray(skyboxVAO);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glDepthMask(GL_TRUE);
-    // ... draw rest of the scene (paintscene)
     glUseProgram(0);
 }

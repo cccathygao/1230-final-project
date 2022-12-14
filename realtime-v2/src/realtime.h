@@ -22,7 +22,6 @@
 #include <QTimer>
 #include <data/vbo.h>
 #include <data/vao.h>
-#include <stb_image.h>
 
 
 enum class SettingType{

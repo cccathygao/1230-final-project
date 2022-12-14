@@ -121,30 +121,30 @@ void Realtime::loadOBJ(){
 
 
     // terrain
-    m_terrain_buffer.clear();
-    objl::Loader loader2;
-    loader2.LoadFile("3.obj");
-    std::vector<objl::Mesh> meshes2 = loader2.LoadedMeshes;
-    for(int i = 0; i<meshes2.size();i++){
-        std::vector<objl::Vertex> vertices = meshes2[i].Vertices;
-        for(int j=0; j<vertices.size(); j++){
-            m_terrain_buffer.push_back(vertices[j].Position.X);
-            m_terrain_buffer.push_back(vertices[j].Position.Y);
-            m_terrain_buffer.push_back(vertices[j].Position.Z);
-            m_terrain_buffer.push_back(vertices[j].Normal.X);
-            m_terrain_buffer.push_back(vertices[j].Normal.Y);
-            m_terrain_buffer.push_back(vertices[j].Normal.Z);
-            m_terrain_buffer.push_back(vertices[j].TextureCoordinate.X);
-            m_terrain_buffer.push_back(vertices[j].TextureCoordinate.Y);
-        }
-    }
-    vert_size = m_terrain_buffer.size()/3;
+//    m_terrain_buffer.clear();
+//    objl::Loader loader2;
+//    loader2.LoadFile("tree_obj.obj");
+//    std::vector<objl::Mesh> meshes2 = loader2.LoadedMeshes;
+//    for(int i = 0; i<meshes2.size();i++){
+//        std::vector<objl::Vertex> vertices = meshes2[i].Vertices;
+//        for(int j=0; j<vertices.size(); j++){
+//            m_terrain_buffer.push_back(vertices[j].Position.X);
+//            m_terrain_buffer.push_back(vertices[j].Position.Y);
+//            m_terrain_buffer.push_back(vertices[j].Position.Z);
+//            m_terrain_buffer.push_back(vertices[j].Normal.X);
+//            m_terrain_buffer.push_back(vertices[j].Normal.Y);
+//            m_terrain_buffer.push_back(vertices[j].Normal.Z);
+//            m_terrain_buffer.push_back(vertices[j].TextureCoordinate.X);
+//            m_terrain_buffer.push_back(vertices[j].TextureCoordinate.Y);
+//        }
+//    }
+//    vert_size = m_terrain_buffer.size()/3;
 
-    // set VBO data
-    m_terrain_vbo.setData(m_terrain_buffer);
+//    // set VBO data
+//    m_terrain_vbo.setData(m_terrain_buffer);
 
-    // set VAO attributes
-    m_terrain_vao.setAttributes(m_terrain_vbo.getId());
+//    // set VAO attributes
+//    m_terrain_vao.setAttributes(m_terrain_vbo.getId());
 }
 
 void Realtime::paintBird(){
@@ -214,15 +214,15 @@ void Realtime::paintLand(){
     glUniform1f(glGetUniformLocation(m_phong_shader,"shininess"),shininess);
 
 
-//    glBindVertexArray(shape_vaos[static_cast<int>(PrimitiveType::PRIMITIVE_CUBE)]);
+    glBindVertexArray(shape_vaos[static_cast<int>(PrimitiveType::PRIMITIVE_CUBE)]);
 
-//    // shadow mapping
+    // shadow mapping
 //    glActiveTexture(GL_TEXTURE1);
 //    glBindTexture(GL_TEXTURE_2D, m_depth_texture);
 
-//    glDrawArrays(GL_TRIANGLES,0,shapeSize(PrimitiveType::PRIMITIVE_CUBE)/6);
+    glDrawArrays(GL_TRIANGLES,0,shapeSize(PrimitiveType::PRIMITIVE_CUBE)/6);
 
-    m_terrain_vao.draw(m_terrain_buffer.size(), -1, m_depth_texture);
+//    m_terrain_vao.draw(m_terrain_buffer.size(), -1, m_depth_texture);
     glUseProgram(0);
 
     // cylinder
