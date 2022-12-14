@@ -15,5 +15,4 @@ void main() {
     worldPosition = vec3(modelMat*vec4(objectPosition,1.f));
     worldNormal = mat3(worldNormalMat)*objectNormal;
     gl_Position = projMat*viewMat*vec4(worldPosition,1.0);
-
 }

@@ -175,7 +175,7 @@ private:
 
 
     GLuint cubemapTexture;
-    GLuint m_cubemap_shader;
+    GLuint m_cube_shader;
     GLuint m_skybox_shader;
 
     GLuint cubeVAO;

@@ -112,7 +112,7 @@ void Realtime::initializeGL() {
     bird_shader = ShaderLoader::createShaderProgram(":/resources/shaders/bird.vert", ":/resources/shaders/bird.frag");
     m_depth_shader = ShaderLoader::createShaderProgram(":/resources/shaders/depth.vert", ":/resources/shaders/depth.frag");
     m_fullscreen_shader = ShaderLoader::createShaderProgram(":/resources/shaders/fullscreen.vert", ":/resources/shaders/fullscreen.frag");
-    m_cubemap_shader = ShaderLoader::createShaderProgram(":/resources/shaders/cubemap.vert", ":/resources/shaders/cubemap.frag");
+    m_cube_shader = ShaderLoader::createShaderProgram(":/resources/shaders/cube.vert", ":/resources/shaders/cube.frag");
     m_skybox_shader = ShaderLoader::createShaderProgram(":/resources/shaders/skybox.vert", ":/resources/shaders/skybox.frag");
 
     setupShapesVBO();
@@ -501,7 +501,38 @@ void Realtime::renderSkyBox(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 model = glm::mat4(1.0f);
 
+    // PART 1. DRAW CUBE
+    glUseProgram(m_cube_shader);
+
+    // set uniforms
+    glUniform1i(glGetUniformLocation(m_cube_shader, "skybox"), 0);
+
+    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
+    proj = camera.getProjMatrix();
+
+    glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "projection"), 1, GL_FALSE, &proj[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "model"), 1, GL_FALSE, &bird_ctm[0][0]);
+
+    vec4 pos = vec4(0,0,0,1);
+//    pos = camera.getPos();
+
+    GLint cameraPosLocation = glGetUniformLocation(m_cube_shader, "cameraPos");
+    glUniform3f(cameraPosLocation, pos[0], pos[1], pos[2]);
+
+    // draw cube
+    glBindVertexArray(cubeVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+
+
+    // PART 2. DRAW SKYBOX
     // draw skybox as last
     glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 
