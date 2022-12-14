@@ -14,5 +14,5 @@ void main()
     FragColor = vec4(texture(skybox, R).rgb, 1.0);
 
     // debug
-//    FragColor = vec4(1.0);
+    FragColor += vec4(0.2);
 }

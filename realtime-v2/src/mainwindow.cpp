@@ -48,7 +48,7 @@ void MainWindow::initialize() {
 
     // Create checkbox for per-pixel filter
     filter1 = new QCheckBox();
-    filter1->setText(QStringLiteral("Shadow"));
+    filter1->setText(QStringLiteral("Environment Mapping"));
     filter1->setChecked(false);
 
     // Create checkbox for kernel-based filter
