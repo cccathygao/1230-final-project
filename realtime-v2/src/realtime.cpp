@@ -494,15 +494,64 @@ void Realtime::loadCubemap(std::vector<std::string> faces)
 }
 
 void Realtime::renderSkyBox(){
-//    glDepthMask(GL_FALSE);
-//    glUseProgram(m_skybox_shader);
-//    // ... set view and projection matrix
-//    // remove translation
-//    glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-//    glBindVertexArray(skyboxVAO);
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-//    glDrawArrays(GL_TRIANGLES, 0, 36);
-//    glDepthMask(GL_TRUE);
-//    // ... draw rest of the scene
-//    glUseProgram(0);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4 view;
+    glm::mat4 proj;
+
+    // draw scene as normal (paintScene)
+//    shader.use();
+//    glm::mat4 model = glm::mat4(1.0f);
+//    glm::mat4 view = camera.GetViewMatrix();
+//    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+//    shader.setMat4("model", model);
+//    shader.setMat4("view", view);
+//    shader.setMat4("projection", projection);
+//    shader.setVec3("cameraPos", camera.Position);
+
+    // cubes
+    glBindVertexArray(cubeVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    // draw skybox as last
+    glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+    glUseProgram(m_skybox_shader);
+    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
+    proj = camera.getProjMatrix();
+
+    GLint viewMatrixLocation = glGetUniformLocation(m_skybox_shader, "view");
+    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &view[0][0]);
+
+    GLint projMatrixLocation = glGetUniformLocation(m_skybox_shader, "projection");
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, &proj[0][0]);
+
+    // skybox cube
+    glBindVertexArray(skyboxVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+    glDepthFunc(GL_LESS); // set depth function back to default
+
+    // OR USE BELOW INSTEAD
+
+    glDepthMask(GL_FALSE);
+    glUseProgram(m_skybox_shader);
+    // set view and projection matrix
+    // remove translation
+    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
+    proj = camera.getProjMatrix();
+
+    glUniformMatrix4fv(glGetUniformLocation(m_skybox_shader, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_skybox_shader, "projection"), 1, GL_FALSE, &proj[0][0]);
+
+    glBindVertexArray(skyboxVAO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthMask(GL_TRUE);
+    // ... draw rest of the scene (paintscene)
+    glUseProgram(0);
 }
