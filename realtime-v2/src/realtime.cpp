@@ -9,7 +9,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform.hpp"
-#include "glm/gtc/constants.hpp"
+#include "src/stb_image.h"
 
 using namespace glm;
 
@@ -62,6 +62,17 @@ void Realtime::finish() {
     glDeleteBuffers(1, &bird_vbo_id);
     glDeleteVertexArrays(1, &bird_vao_id);
 
+    // fullscreen
+    glDeleteProgram(m_fullscreen_shader);
+    glDeleteBuffers(1, &m_fullscreen_vbo);
+    glDeleteVertexArrays(1, &m_fullscreen_vao);
+
+    // sky box
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteVertexArrays(1, &skyboxVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteBuffers(1, &skyboxVBO);
+
     this->doneCurrent();
 }
 
@@ -99,11 +110,16 @@ void Realtime::initializeGL() {
     m_fbo_shader = ShaderLoader::createShaderProgram(":/resources/shaders/fbo.vert", ":/resources/shaders/fbo.frag");
     bird_shader = ShaderLoader::createShaderProgram(":/resources/shaders/bird.vert", ":/resources/shaders/bird.frag");
     m_depth_shader = ShaderLoader::createShaderProgram(":/resources/shaders/depth.vert", ":/resources/shaders/depth.frag");
+    m_fullscreen_shader = ShaderLoader::createShaderProgram(":/resources/shaders/fullscreen.vert", ":/resources/shaders/fullscreen.frag");
+    m_cubemap_shader = ShaderLoader::createShaderProgram(":/resources/shaders/cubemap.vert", ":/resources/shaders/cubemap.frag");
+    m_skybox_shader = ShaderLoader::createShaderProgram(":/resources/shaders/skybox.vert", ":/resources/shaders/skybox.frag");
+
     setupShapesVBO();
     updateShapesVBO();
     setFullscreenquad();
     makeFBO();
     makeDepthFBO();
+    initFullscreenQuad();
 
     // generate VAO and VBO
     m_bird_vao.initialize();
@@ -116,16 +132,19 @@ void Realtime::initializeGL() {
                  0,0,1,0,
                  0,15,15,1);
     normal_ctm = inverse(transpose(bird_ctm));
-    //
+
+    // sky box
+    initializeSkyBox();
+    loadCubemap(faces);
 
 }
 
 void Realtime::paintGL() {
     // shadow mapping, paint depth texture
-    glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
-    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    renderDepthMap();
+//    glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+//    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+//    glClear(GL_DEPTH_BUFFER_BIT);
+//    renderDepthMap();
 
     glClearColor(0.8,1,1,1);
     glBindFramebuffer(GL_FRAMEBUFFER,m_fbo);
@@ -141,6 +160,12 @@ void Realtime::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(vp[0],vp[1],vp[2],vp[3]);
     paintTexture(color_texture);
+
+    // debug
+//    glBindFramebuffer(GL_FRAMEBUFFER, default_fbo);
+//    glViewport(0, 0, size().width() * m_devicePixelRatio, size().height() * m_devicePixelRatio);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    paintTexture();
 }
 
 void Realtime::resizeGL(int w, int h) {
@@ -326,8 +351,8 @@ void Realtime::lightSpaceTransform(SceneLightData light){
 void Realtime::renderDepthMap(){
     glUseProgram(m_depth_shader);
 
-//    std::cout << "mat_light_RenderDepth" << std::endl;
-//    std::cout << glm::to_string(m_lightSpaceMatrix) << std::endl;
+    std::cout << "mat_light" << std::endl;
+    std::cout << glm::to_string(m_lightSpaceMatrix) << std::endl;
 
     // set uniforms
     // light space transformation matrix
@@ -342,4 +367,142 @@ void Realtime::renderDepthMap(){
     m_bird_vao.draw(m_buffer.size(), -1, -1);
 
     glUseProgram(0);
+}
+
+// debug
+// render depth to fullscreen quad
+void Realtime::paintTexture(){
+    std::cout << "paint Texture" << std::endl;
+
+    glUseProgram(m_fullscreen_shader);
+
+    // set uniforms
+    // depthMap texture
+    // debug
+    GLint depthTextureLocation = glGetUniformLocation(m_fullscreen_shader, "depthMap");
+    glUniform1i(depthTextureLocation, 0);
+
+    // colorBuffer texture
+//    GLint colorTextureLocation = glGetUniformLocation(m_fullscreen_shader, "colorBuffer");
+//    glUniform1i(colorTextureLocation, 0);
+
+    // draw to fullscreen quad
+    glBindVertexArray(m_fullscreen_vao);
+
+    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, color_texture);
+    // debug
+    glBindTexture(GL_TEXTURE_2D, m_depth_texture);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+}
+
+void Realtime::initFullscreenQuad(){
+    std::vector<GLfloat> fullscreen_quad_data =
+    {
+        -1.0f,  1.0f, 0.0f,
+         0.f, 1.f,
+        -1.0f, -1.0f, 0.0f,
+         0.f, 0.f,
+         1.0f, -1.0f, 0.0f,
+         1.f, 0.f,
+         1.0f,  1.0f, 0.0f,
+         1.f, 1.f,
+        -1.0f,  1.0f, 0.0f,
+         0.f, 1.f,
+         1.0f, -1.0f, 0.0f,
+         1.f, 0.f
+    };
+
+    // Generate and bind a VBO and a VAO for a fullscreen quad
+    glGenBuffers(1, &m_fullscreen_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_fullscreen_vbo);
+    glBufferData(GL_ARRAY_BUFFER, fullscreen_quad_data.size()*sizeof(GLfloat), fullscreen_quad_data.data(), GL_STATIC_DRAW);
+    glGenVertexArrays(1, &m_fullscreen_vao);
+    glBindVertexArray(m_fullscreen_vao);
+
+    // attribute 0: pos, 1: uv
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<void *>(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+
+    // Unbind the fullscreen quad's VBO and VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+
+// sky box
+void Realtime::initializeSkyBox(){
+    // cubemap VAO
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    // skybox VAO
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+}
+
+void Realtime::loadCubemap(std::vector<std::string> faces)
+{
+    // generate and bind cubemap
+    glGenTextures(1, &cubemapTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+    // set image on 6 sides of the texture
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+
+    // specify cube map texture params
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
+void Realtime::renderSkyBox(){
+//    glDepthMask(GL_FALSE);
+//    glUseProgram(m_skybox_shader);
+//    // ... set view and projection matrix
+//    // remove translation
+//    glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//    glBindVertexArray(skyboxVAO);
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+//    glDrawArrays(GL_TRIANGLES, 0, 36);
+//    glDepthMask(GL_TRUE);
+//    // ... draw rest of the scene
+//    glUseProgram(0);
 }

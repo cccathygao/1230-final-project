@@ -38,7 +38,8 @@ uniform mat4 lightSpaceMatrix;
 float shadowCalculation(vec4 fragPosLightSpace)
 {
     // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+//    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    vec3 projCoords = fragPosLightSpace.xyz;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
@@ -53,9 +54,10 @@ float shadowCalculation(vec4 fragPosLightSpace)
 //    float bias = max(0.05 * (1.0 - dot(vec4(normal_world, 0.f), lightDirs[0])), 0.005);
 //    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
 
-    if (currentDepth == 0.0){
-        shadow = 1.0;
-    }
+    // closest depth == 1, current depth < 1, for all points
+//    if (closestDepth == 1.0){
+//        shadow = 1.0;
+//    }
 
     return shadow;
 }
@@ -66,12 +68,6 @@ void main() {
     // shadow mapping
     vec4 position_lightspace = lightSpaceMatrix * vec4(worldPosition, 1.f);
     float shadow = shadowCalculation(position_lightspace);
-
-
-    if (shadow == 1.0){
-        fragColor = vec4(1.f);
-        return;
-    }
 
     vec3 normWorld = vec3(normalize(worldNormal));
     for(int i=0; i<nlights; i++){
@@ -116,9 +112,9 @@ void main() {
 
     //ambient
     vec3 ambient = ka*cAmbient;
-//    total += ambient;
+    total += ambient;
 
-    total = ambient + (1.0 - shadow) * total;
+//    total = ambient + (1.0 - shadow) * total;
 
     fragColor = vec4(clamp(total,0.0,1.0),1.f);
 

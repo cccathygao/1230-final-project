@@ -60,6 +60,7 @@ add_executable(${PROJECT_NAME}
     src/OBJ_Loader.h
     src/data/vao.h
     src/data/vbo.h
+    src/stb_image.h
 
 
 )
@@ -94,6 +95,12 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
         resources/shaders/bird.vert
         resources/shaders/depth.frag
         resources/shaders/depth.vert
+        resources/shaders/fullscreen.frag
+        resources/shaders/fullscreen.vert
+        resources/shaders/cubemap.frag
+        resources/shaders/cubemap.vert
+        resources/shaders/skybox.frag
+        resources/shaders/skybox.vert
 )
 
 # GLEW: this provides support for Windows (including 64-bit)

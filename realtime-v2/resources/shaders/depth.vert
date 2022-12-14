@@ -8,4 +8,5 @@ void main()
 {
     // convert position from obj space to light space
     gl_Position = lightSpaceMatrix * mat_model * vec4(position_obj, 1.0);
+    gl_Position = vec4(0.1, 0.1, 0.1, 0.1);
 }

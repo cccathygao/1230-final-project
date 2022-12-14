@@ -109,6 +109,8 @@ void Realtime::loadOBJ(){
             m_buffer.push_back(vertices[j].Normal.Z);
             m_buffer.push_back(vertices[j].TextureCoordinate.X);
             m_buffer.push_back(vertices[j].TextureCoordinate.Y);
+            std::cout << vertices[j].Position.X << vertices[j].Position.Y << vertices[j].Position.Z << std::endl;
+            std::cout << std::endl;
         }
     }
     vert_size = m_buffer.size()/3;
