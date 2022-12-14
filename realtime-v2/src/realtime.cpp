@@ -137,6 +137,7 @@ void Realtime::initializeGL() {
     // sky box
     initializeSkyBox();
     loadCubemap(faces);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Realtime::paintGL() {
@@ -509,7 +510,8 @@ void Realtime::renderSkyBox(){
     // set uniforms
     glUniform1i(glGetUniformLocation(m_cube_shader, "skybox"), 0);
 
-    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
+//    view = glm::mat4(glm::mat3(camera.getViewMatrix())); // remove translation from the view matrix
+    view = camera.getViewMatrix();
     proj = camera.getProjMatrix();
 
     glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "view"), 1, GL_FALSE, &view[0][0]);
@@ -517,7 +519,7 @@ void Realtime::renderSkyBox(){
     glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "model"), 1, GL_FALSE, &bird_ctm[0][0]);
 
     vec4 pos = vec4(0,0,0,1);
-//    pos = camera.getPos();
+    pos = camera.getPos();
 
     GLint cameraPosLocation = glGetUniformLocation(m_cube_shader, "cameraPos");
     glUniform3f(cameraPosLocation, pos[0], pos[1], pos[2]);
