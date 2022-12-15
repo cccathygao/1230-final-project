@@ -22,6 +22,8 @@
 #include <QTimer>
 #include <data/vbo.h>
 #include <data/vao.h>
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/transform.hpp"
 
 
 enum class SettingType{
@@ -172,7 +174,10 @@ private:
     void initializeSkyBox();
     void loadCubemap(std::vector<std::string> faces);
     void renderSkyBox();
-
+    glm::mat4 m_cube_model = glm::mat4(1,0,0,0,
+                                       0,1,0,0,
+                                       0,0,1,0,
+                                       0,30,15,1)*glm::rotate(45.f,glm::vec3(0,1,0));
 
     GLuint cubemapTexture;
     GLuint m_cube_shader;

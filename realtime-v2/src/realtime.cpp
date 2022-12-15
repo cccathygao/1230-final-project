@@ -280,6 +280,7 @@ void Realtime::timerEvent(QTimerEvent *event) {
 //    camera.setPos(pos);
 //    camera.modifyView();
 //    parseGlobal();
+    m_cube_model *= glm::rotate(0.005f, glm::vec3(0,1,0));
     std::cout<<"time"<<std::endl;
     // Use deltaTime and m_keyMap here to move around
     moveCamera(deltaTime);
@@ -502,10 +503,10 @@ void Realtime::renderSkyBox(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glm::mat4 view;
     glm::mat4 proj;
-    glm::mat4 model = glm::mat4(1,0,0,0,
-                           0,1,0,0,
-                           0,0,1,0,
-                           0,30,15,1)*glm::rotate(45.f,glm::vec3(0,1,0));
+//    m_cube_model = glm::mat4(1,0,0,0,
+//                           0,1,0,0,
+//                           0,0,1,0,
+//                           0,30,15,1)*glm::rotate(45.f,glm::vec3(0,1,0));
 
     // PART 1. DRAW CUBE
     if (settings.shadow){
@@ -520,7 +521,7 @@ void Realtime::renderSkyBox(){
 
         glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "view"), 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "projection"), 1, GL_FALSE, &proj[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "model"), 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(m_cube_shader, "model"), 1, GL_FALSE, &m_cube_model[0][0]);
 
         vec4 pos = vec4(0,0,0,1);
         pos = camera.getPos();
