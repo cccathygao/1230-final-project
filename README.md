@@ -11,3 +11,6 @@
 - In the second scene, we created a skybox to serve as the background.
 - A skybox is a large cube that encompasses the entire scene and contains 6 images of a surrounding environment. We fold those 6 sides to get the completely textured cube that simulates a large landscape.
 - We also implemented environment mapping with a reflective cube. The cube is rotating in real-time and reflecting the environment. 
+
+
+To run the project, open realtime-v2 in Qt, then click Run. 
